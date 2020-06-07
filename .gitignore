@@ -1,0 +1,12 @@
+# mac
+.DS_Store
+
+# hexo
+Thumbs.db
+db.json
+*.log
+node_modules/
+public/
+.deploy*/
+node_modules
+*/.git/*
