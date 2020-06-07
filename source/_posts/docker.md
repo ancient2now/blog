@@ -11,23 +11,18 @@ categories: help
 
 ## 二. docker容器虚拟化的优点
 
-环境隔离
-
-更快速的交付部署
-
-更高效的资源利用
-
-更迁移扩展
-
+环境隔离  
+更快速的交付部署  
+更高效的资源利用  
+更迁移扩展  
 更简单的更新管理
 
-`docker build -t="vagabondize/test"`
+<!-- more -->
 
-`docker rmi vagabondize/test`
-
+`docker build -t="vagabondize/test"`  
+`docker rmi vagabondize/test`  
 `docker run --name test1 vagabondize/test`
 
-<!-- more -->
 
 ## 三. docker镜像
 

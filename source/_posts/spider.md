@@ -11,6 +11,8 @@ categories: help
 
 把 url 存在某个地方（redis），共享给所有的机器，总的调度器来分配请求，判断 spider 有没有闲置，闲置了就继续给它任务，直到所有的 url 都爬完，这种方法解决了去重问题，也能提高性能，scrapy-redis 就实现了这样一个完整框架，总的来说，这更适合广度优先的爬取。
 
+<!-- more -->
+
 ### Headers设置
 
 * User-Agent: 部分服务器或 Proxy 会通过该值来判断是否是浏览器发出的请求
@@ -18,8 +20,6 @@ categories: help
 * application/xml: 在 XMl RPC, 如 RESTful/SOAP 调用时使用
 * application/json: 在 JSON RPC 调用时使用
 * application/x-www-form-urlencoded: 浏览器提交 Web 表单时使用
-
-<!-- more -->
 
 ## 爬虫难点
 
