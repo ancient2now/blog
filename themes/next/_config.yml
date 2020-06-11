@@ -197,12 +197,14 @@ social_icons:
 # Blog rolls
 links_settings:
   icon: fa fa-link
-  title: Links
+  title: 友情链接
   # Available values: block | inline
   layout: block
 
 links:
-  Miki: https://miki.red
+  Miki's Blog: https://miki.red
+  show my love: https://高婷.我爱你
+  My resume: https://resume.aki.ink
   #Title: http://yoursite.com
 
 # Table of Contents in the Sidebar
@@ -435,7 +437,7 @@ font:
   # Font settings for headlines (<h1> to <h6>).
   headings:
     external: true
-    family:
+    family: Roboto Slab
     size:
 
   # Font settings for posts (.post-body).
