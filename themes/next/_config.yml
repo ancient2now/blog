@@ -999,3 +999,11 @@ vendors:
 css: css
 js: js
 images: images
+
+# window woblle
+wobble:
+  enable: true  # 是否开启边缘波动效果
+  radius: 50  # 波动半径
+  sidebar: false  # 开启侧边栏边缘摆动
+  header: true  # 开启头部边缘摆动
+  footer: true  # 开启脚部边缘摆动

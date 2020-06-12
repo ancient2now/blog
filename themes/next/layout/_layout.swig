@@ -13,7 +13,7 @@
   <div class="container{%- if theme.motion.enable %} use-motion{%- endif %}">
     <div class="headband"></div>
 
-    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
       <div class="header-inner">{% include '_partials/header/index.swig' %}</div>
     </header>
 
@@ -34,7 +34,7 @@
       </div>
     </main>
 
-    <footer class="footer">
+    <footer id="footer" class="footer">
       <div class="footer-inner">
         {% include '_partials/languages.swig' %}
         {{ partial('_partials/footer.swig', {}, {cache: theme.cache.enable}) }}
@@ -56,5 +56,8 @@
   {%- if theme.pjax %}
     </div>
   {%- endif %}
+
+  {% include 'wobblewindow.swig' %}
+
 </body>
 </html>
