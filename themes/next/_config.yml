@@ -1007,3 +1007,7 @@ wobble:
   sidebar: false  # 开启侧边栏边缘摆动
   header: true  # 开启头部边缘摆动
   footer: true  # 开启脚部边缘摆动
+
+
+# mouse click effect: fireworks | explosion | love | text
+cursor_effect: fireworks

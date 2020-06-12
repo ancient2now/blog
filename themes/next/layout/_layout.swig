@@ -58,6 +58,7 @@
   {%- endif %}
 
   {% include 'wobblewindow.swig' %}
+  {% include 'cursor.swig' %}
 
 </body>
 </html>
