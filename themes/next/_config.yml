@@ -87,8 +87,8 @@ footer:
 # CC licenses are available in 39 languages, you can find the specific and correct abbreviation you need on https://creativecommons.org
 creative_commons:
   license: by-nc-sa
-  sidebar: false
-  post: false
+  sidebar: true
+  post: true
   language:
 
 
@@ -394,7 +394,7 @@ bookmark:
 # `Follow me on GitHub` banner in the top-right corner.
 github_banner:
   enable: false
-  permalink: https://github.com/yourname
+  permalink: https://github.com/ancient2now
   title: Follow me on GitHub
 
 
@@ -975,8 +975,8 @@ vendors:
 
   # Internal version: 1.0.2
   # pace: //cdn.jsdelivr.net/npm/pace-js@1/pace.min.js
-  # pace: //cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js
   # pace_css: //cdn.jsdelivr.net/npm/pace-js@1/themes/blue/pace-theme-minimal.css
+  # pace: //cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js
   # pace_css: //cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-minimal.min.css
   pace:
   pace_css:
