@@ -1,8 +1,8 @@
 ---
 title: docker初体验
 date: 2017-04-01 18:05:49
-tags: [docker, help]
-categories: help
+tags: [docker]
+categories: HelpDocument
 ---
 
 ## 一. docker的主要目标
@@ -23,7 +23,6 @@ categories: help
 `docker rmi vagabondize/test`  
 `docker run --name test1 vagabondize/test`
 
-
 ## 三. docker镜像
 
 镜像是一个只读的模板  
@@ -32,6 +31,7 @@ categories: help
 `docker inspect -f &#123;{.Os}&#125; <imageID>`
 
 ### 创建镜像
+
 1. 基于原有容器创建新的镜像  
 
     `docker run -ti ubuntu bash`
@@ -64,12 +64,11 @@ categories: help
 
 2) run 创建并运行（create + start）
 
-
 ### 2. 使用容器
 
 1. 进入容器
 
-   启动时使用bash `docker run -i -t ubuntu /bin/bash` 
+   启动时使用bash `docker run -i -t ubuntu /bin/bash`
 
    进入已启动容器的内部 `docker exec -i -t <container_id> bash`
 
@@ -81,10 +80,10 @@ categories: help
 
     终止容器 `docker stop <container_id>`
 
-3. 查看容器 
+3. 查看容器
 
     查看终止的容器：`docker ps -a`
-    
+
     查看运行的容器：`docker ps`  
 
 4. 删除容器
@@ -99,20 +98,18 @@ categories: help
 
      `cat test.tar | docker import - vagabondize/hello:test`
 
-
-
 ## 五. docker仓库
 
 1. 私有仓库
 
-    registry 
+    registry
 
 2. 管理私有仓库
 
     docker-registry-ui
 
-     
 ## 六. 数据卷
+
  -v 标记创建一个数据卷，映射目录
 
  `docker run -d --name app1 -it -v ${PWD}/webapp:/root/webapp ubuntu bash`
@@ -133,10 +130,9 @@ categories: help
 
 `docker run --volumes-from dbdata2 -v ${PWD}:/backup ubuntu / tar xvf /backup/bacup.tar`
 
-
 ## 七. docker网络
 
-# centos
+## centos install
 
 `sudo yum install net-tools`  
 
@@ -144,7 +140,7 @@ categories: help
 
 配置信任仓库  
 /lib/systemd/system/docker.service  添加  --insecure-registry 192.168:5000  
-`sudo systemctl daemon-reload`   
+`sudo systemctl daemon-reload`  
 `service docker restart`  
 
 添加加速器

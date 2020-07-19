@@ -1,11 +1,11 @@
 ---
 title: Github初体验
 date: 2016-06-07 18:05:49
-tags: [help, github]
-categories: help
+tags: [github, git]
+categories: HelpDocument
 ---
 
-*来源于google，baidu搜索*
+> 来源于google，baidu搜索
 
 #### 任何页面按(shift + /)都会出现快捷键列表
 
@@ -19,4 +19,4 @@ categories: help
 * Gist-----------可以用来记录代码片段
 * Pulse-----------显示该仓库的活跃信息
 * Graphs----------以图表形式显示改仓库的各项指标。用户可以轻松了解
-* Settings--------这里可以更改当前仓库的设置。（删除仓库就在这里边）
+* Settings--------这里可以更改当前仓库的设置。（删除仓库就在这里边)
