@@ -2,7 +2,7 @@
 title: Git Help Document
 date: 2017-01-07 18:05:49
 tags: [git]
-categories: HelpDocument
+categories: Help Document
 description: 自己记录了git的常用指令，由浅入深，以及记录了自己在实际使用中的一些场景的解决方案
 ---
 

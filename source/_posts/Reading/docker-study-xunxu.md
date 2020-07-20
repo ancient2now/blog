@@ -2,7 +2,7 @@
 title: 《循序渐进学Docker》读书笔记
 date: 2017-06-07 18:05:49
 tags: [docker]
-categories: HelpDocument
+categories: Reading
 description: 看完《循序渐进学Docker》这本书，将书中关键的docker指令记录下来，方便以后查阅
 ---
 

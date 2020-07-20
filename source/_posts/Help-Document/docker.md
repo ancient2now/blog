@@ -2,7 +2,7 @@
 title: docker初体验
 date: 2017-04-01 18:05:49
 tags: [docker]
-categories: HelpDocument
+categories: Help Document
 ---
 
 ## 一. docker的主要目标

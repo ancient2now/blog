@@ -2,7 +2,7 @@
 title: Github初体验
 date: 2016-06-07 18:05:49
 tags: [github, git]
-categories: HelpDocument
+categories: Help Document
 ---
 
 > 来源于google，baidu搜索

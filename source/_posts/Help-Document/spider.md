@@ -2,7 +2,7 @@
 title: 分布式爬虫
 date: 2018-06-07 18:05:49
 tags: [spider] 
-categories: HelpDocument
+categories: Help Document
 ---
 
 ## 爬虫基础
