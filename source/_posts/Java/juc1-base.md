@@ -1,7 +1,7 @@
 ---
 title: Java高并发：基本概念
 date: 2020-07-25 19:38:57
-tags: Java, JUC, 高并发
+tags: [Java, JUC, 高并发, 多线程]
 categories: Java
 description: 主要介绍了Java底层的基础知识，也算是学习高并发的基础知识，其中涉及到JMM，以及两个常用的关键子volatile和synchronized，以及CAS无锁算法，通过深入了解这些点，从而了解高并发会遇到哪些问题，进而开始深入学习并发编程。
 ---

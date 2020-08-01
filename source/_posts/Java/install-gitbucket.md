@@ -1,7 +1,7 @@
 ---
 title: Scala.01. Install 搭建gitbucket环境
 date: 2020-07-31 19:38:57
-tags: Scala, help
+tags: [Scala, help]
 categories: Java
 ---
 
