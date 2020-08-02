@@ -2,9 +2,8 @@
 title: Scala.01. Install 搭建gitbucket环境
 date: 2020-07-31 19:38:57
 tags: [Scala, help]
-categories: Java
+categories: Scala
 ---
-
 
 gitbucket是提供了一个类似github的功能的一个开源项目，自己的开源项目打算用到这样的功能，先下载研究一下。
 
