@@ -22,6 +22,7 @@ gitbukcet使用scala开发的，以前也接触过，相对还比较熟悉些，
 `sdk install sbt` 这条指令中的sdk,是管理工具sdkman，可以点击[详细了解](https://sdkman.io/),要想使用这个的话，需要自己安装
 
 对照文档去看，一开始使用`sdk instal sbt`去下载sbt，发现有点慢，还会失败，就换成使用apt去下载，分别执行以下4步
+
 ```shell
 echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
 
@@ -38,7 +39,8 @@ sudo apt-get install sbt
 安装完成sbt后，运行下sbt，可能一开始会下载一些包之类的比较慢，可以考虑换镜像，更换源，比如[华为镜像](https://mirrors.huaweicloud.com/)这个里面能找到
 
 如果想想要下载jar包快点的话，在`～/.sbt`目录下新建一个文件`repositories`,文件的全路径`~/.sbt/repositories`,内容如下，亲测可用
-```
+
+```text
 [repositories]
 #本地源
 local
@@ -54,6 +56,7 @@ sonatype-oss-releases
 maven-central
 sonatype-oss-snapshots
 ```
+
 如果在项目里面运行的话，idea添加 VM 参数：`-Dsbt.override.build.repos=true`
 
 命令行执行：`sbt -Dsbt.override.build.repos=true clean compile`
@@ -61,8 +64,9 @@ sonatype-oss-snapshots
 #### sbt初使用
 
 可以运行直接运行sbt，进sbt的终端：
+
 ```shell
-aki@mint:~$ sbt 
+aki@mint:~$ sbt
 ```
 
 > [info] [launcher] getting org.scala-sbt sbt 1.3.13  (this may take some time)...  
@@ -71,11 +75,12 @@ aki@mint:~$ sbt
 使用`tail -f $HOME/.sbt/boot/update.log`能看到详细日志。
 
 在sbt终端里，可以使用一下命令查看它的指令：
+
 ```shell
 sbt:gitbucket> help
 ```
-更详细的介绍在[官方文档](https://www.scala-sbt.org/1.x/docs/sbt-by-example.html)里有哟
 
+更详细的介绍在[官方文档](https://www.scala-sbt.org/1.x/docs/sbt-by-example.html)里有哟
 
 #### install scala
 
