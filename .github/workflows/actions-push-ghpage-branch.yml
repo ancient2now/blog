@@ -1,0 +1,49 @@
+name: Generate static file And Push gh-pages branch
+
+on:
+  push:
+    branches: master
+
+jobs:
+  hexo-deployment:
+
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Shanghai
+
+    steps:
+
+    - name: Checkout Source
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - name: Use Node.js 10
+      uses: actions/setup-node@v3
+      with:
+        node-version: '10.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: |
+        npm i -g hexo-cli
+        npm install
+        
+    - name: Generate static files
+      run: |
+        hexo clean
+        hexo g -d
+
+    - name: Deploy to Github Pages
+      env:
+        GIT_NAME: ancient2now
+        GIT_EMAIL: ancient2now@163.com
+        REPO: github.com/ancient2now/blog
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+        cd ./public && git init && git add . 
+        git config --global user.name $GIT_NAME
+        git config --global user.email $GIT_EMAIL
+        git commit -m "Site deployed by GitHub Actions"
+        git checkout -b gh-pages
+        git push --force --quiet "https://$GH_TOKEN@$REPO" gh-pages:gh-pages
