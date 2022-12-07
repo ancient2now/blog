@@ -40,10 +40,12 @@ custom_file_path:
 # ---------------------------------------------------------------
 
 favicon:
-  small: /images/favicon-16x16-next.png
-  medium: /images/favicon-32x32-next.png
-  apple_touch_icon: /images/apple-touch-icon-next.png
-  safari_pinned_tab: /images/logo.svg
+  small: /images/profile/profile_thumb.jpg
+  medium: /images/profile/profile_thumb.jpg
+  # small: /images/favicon-16x16-next.png
+  # medium: /images/favicon-32x32-next.png
+  # apple_touch_icon: /images/apple-touch-icon-next.png
+  # safari_pinned_tab: /images/logo.svg
   #android_manifest: /images/manifest.json
   #ms_browserconfig: /images/browserconfig.xml
 
@@ -124,7 +126,7 @@ menu:
   #sitemap: /sitemap.xml || fa fa-sitemap
   #commonweal: /404/ || fa fa-heartbeat
   # about: /about/ || fa fa-user
-  about: https://resume.aki.ink || fa fa-user
+  about: https://ancient2now.github.io || fa fa-user
 
 # Enable / Disable menu icons / item badges.
 menu_settings:
@@ -164,7 +166,7 @@ sidebar:
 # Sidebar Avatar
 avatar:
   # Replace the default image and set the url here.
-  url: https://mbi.yume.ink/config/IMG_7638.JPG
+  url: /images/profile/profile_thumb.jpg
   # If true, the avatar will be dispalyed in circle.
   rounded: true
   # If true, the avatar will be rotated with the cursor.
@@ -179,7 +181,7 @@ site_state: true
 # Value before `||` delimiter is the target permalink, value after `||` delimiter is the name of Font Awesome icon.
 social:
   GitHub: https://github.com/ancient2now || fab fa-github
-  E-Mail: mailto:akikun829@163.com || fa fa-envelope
+  E-Mail: mailto:ancient2now@qq.com || fa fa-envelope
   #Weibo: https://weibo.com/yourname || fab fa-weibo
   #Google: https://plus.google.com/yourname || fab fa-google
   #Twitter: https://twitter.com/yourname || fab fa-twitter
@@ -202,9 +204,8 @@ links_settings:
   layout: block
 
 links:
-  Miki's Blog: https://miki.red
-  show my love: https://高婷.我爱你
-  My resume: https://resume.aki.ink
+  # Show My Love: https://高婷.我爱你
+  个人简历: https://resume.akikun.com
   #Title: http://yoursite.com
 
 # Table of Contents in the Sidebar

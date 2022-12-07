@@ -1,12 +1,15 @@
 # mac
 .DS_Store
 
-# hexo
-Thumbs.db
-db.json
-*.log
+# node
 node_modules/
 public/
 .deploy*/
 node_modules
+
+
+# hexo
+Thumbs.db
+db.json
+*.log
 */.git/*

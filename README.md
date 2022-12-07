@@ -1,11 +1,12 @@
-<h1 align='center'> Aki's Blog </h1>
+<h1 align='center'> Li Junqiu's Blog </h1>
 
 <p align='center'>
-  <img src="https://mbi.yume.ink/config/IMG_7638.JPG" width="240"/>
+  <img src="https://blog.akikun.com/images/profile/profile.jpg" width="240"/>
 </p>
 
 <p align="center">
-  <img src="https://travis-ci.com/ancient2now/aki.blog.svg?branch=master" alt="Travis CI" />
+  <img src="https://github.com/ancient2now/blog/actions/workflows/actions-push-ghpage-branch.yml/badge.svg" alt="Generate static file And push to gh-pages branch" />
+  <img src="https://github.com/ancient2now/blog/actions/workflows/pages/pages-build-deployment/badge.svg" alt="Build github pages And Deployment" />
 </p>
 
 ## Powered by

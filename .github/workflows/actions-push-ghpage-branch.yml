@@ -1,4 +1,4 @@
-name: Generate static file And Push gh-pages branch
+name: Generate And Push
 
 on:
   push:
