@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/profile/profile_thumb.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/profile/profile_thumb.jpg">
+
+<link rel="stylesheet" href="/blog/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ancient2now.github.io","root":"/blog/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="有个项目中涉及到将数据存储从 Oracle 迁移到 MySQL ，有些语法的改动，记录下收藏的语法差异，之后补充 PostgreSQL 的语法差异。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Oracle 与 MySQL 的差异">
+<meta property="og:url" content="https://ancient2now.github.io/blog/2020/08/web-server/mysql-oracle-diff/index.html">
+<meta property="og:site_name" content="Li Junqiu&#39;s Blog">
+<meta property="og:description" content="有个项目中涉及到将数据存储从 Oracle 迁移到 MySQL ，有些语法的改动，记录下收藏的语法差异，之后补充 PostgreSQL 的语法差异。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-08-19T11:38:57.000Z">
+<meta property="article:modified_time" content="2025-05-28T12:45:11.241Z">
+<meta property="article:author" content="李 俊 秋">
+<meta property="article:tag" content="MySQL">
+<meta property="article:tag" content="Oracle">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://ancient2now.github.io/blog/2020/08/web-server/mysql-oracle-diff/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Oracle 与 MySQL 的差异 | Li Junqiu's Blog</title>
+  
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?1b1b4c07c3486b17d72642804f132fb4";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/blog/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Li Junqiu's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/blog/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/blog/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/blog/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/blog/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="https://ancient2now.github.io/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://ancient2now.github.io/blog/2020/08/web-server/mysql-oracle-diff/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/blog/images/profile/profile_thumb.jpg">
+      <meta itemprop="name" content="李 俊 秋">
+      <meta itemprop="description" content="out of sight, out of mind">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Li Junqiu's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Oracle 与 MySQL 的差异
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-19 19:38:57" itemprop="dateCreated datePublished" datetime="2020-08-19T19:38:57+08:00">2020-08-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-05-28 20:45:11" itemprop="dateModified" datetime="2025-05-28T20:45:11+08:00">2025-05-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/Web-Server/" itemprop="url" rel="index"><span itemprop="name">Web Server</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>有个项目中涉及到将数据存储从 Oracle 迁移到 MySQL ，有些语法的改动，记录下收藏的语法差异，之后补充 PostgreSQL 的语法差异。</p>
+<a id="more"></a>
+
+<h2 id="dual特殊表"><a href="#dual特殊表" class="headerlink" title="dual特殊表"></a>dual特殊表</h2><p>Oracle:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="number">1</span> <span class="keyword">from</span> dual</span><br></pre></td></tr></table></figure>
+
+<p>MySQL:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="number">1</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="null-空字符串-0"><a href="#null-空字符串-0" class="headerlink" title="null | 空字符串 | 0"></a>null | 空字符串 | 0</h2><blockquote>
+<p>对于 Oracle 而言，空字符串与 NULL 一样。对于 MySQL 底层存储而言，没有空字符串，只有 NULL。</p>
+</blockquote>
+<h3 id="1-substr"><a href="#1-substr" class="headerlink" title="1. substr"></a>1. substr</h3><p>substr 在 Oracle 与 MySQL 中意义基本一致，除了 位置 参数：</p>
+<p>对于位置 0，Oracle 认为与 1 一样，而 MySQL 返回 空字符串</p>
+<p>另外，对于空字符串，Oracle 与 NULL 一样</p>
+<table>
+<thead>
+<tr>
+<th>Oracle</th>
+<th>MySQL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>substr(x, 0)</td>
+<td>nullif(substr(x, 1), ‘’)</td>
+</tr>
+<tr>
+<td>substr(x, pos)</td>
+<td>nullif(substr(x, pos), ‘’)</td>
+</tr>
+<tr>
+<td>substr(x, pos, length)</td>
+<td>nullif(substr(x, pos, length), ‘’)</td>
+</tr>
+</tbody></table>
+<h3 id="2-trim"><a href="#2-trim" class="headerlink" title="2. trim"></a>2. trim</h3><p>Oracle 与 MySQL 的 trim 一样，但是需要注意空字符串问题，所以可以加入一个 nullif。</p>
+<p>Oracle:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trim(x)</span><br></pre></td></tr></table></figure>
+
+<p>MySQL:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nullif(trim(x), '')</span><br></pre></td></tr></table></figure>
+
+<h2 id="nvl-nvl2-ifnull"><a href="#nvl-nvl2-ifnull" class="headerlink" title="nvl | nvl2 | ifnull"></a>nvl | nvl2 | ifnull</h2><p><code>NVL(expr1, expr2)</code>：如果 expr1 不为 null，返回 expr1；否则返回 expr2。</p>
+<p><code>NVL2(expr1, expr2, expr3)</code>：如果 expr1 不为 null，返回 expr2；否则返回 expr3。</p>
+<table>
+<thead>
+<tr>
+<th>Oracle</th>
+<th>Mysql</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>nvl(a, b)</td>
+<td>ifnull(a, b)</td>
+<td>coalesce 返回第一个不为空的值，可以代替 nvl 及 isnull</td>
+</tr>
+<tr>
+<td>nvl2(a, b, c)</td>
+<td>if(a is not null, b, c)</td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="排序的字段有null值"><a href="#排序的字段有null值" class="headerlink" title="排序的字段有null值"></a>排序的字段有null值</h2><p>Oracle：</p>
+<p>null值默认是最后，可以使用<code>nulls first</code>和<code>nulls last</code>来控制，mysql没有这两个语法</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> *</span><br><span class="line"><span class="keyword">from</span> company</span><br><span class="line"><span class="keyword">order</span> <span class="keyword">by</span> add_time <span class="keyword">desc</span> <span class="keyword">nulls</span> <span class="keyword">last</span></span><br></pre></td></tr></table></figure>
+
+<p>MySQL：</p>
+<p>mysql可以使用<code>isnull</code>将null值和非null值分开来，再实现排序。</p>
+<p><strong>注意:</strong> 对于数字型，可以使用 MySQL 特定语法，也就是<code>null</code>比任何数字都小。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> *</span><br><span class="line"><span class="keyword">from</span> company</span><br><span class="line"><span class="keyword">order</span> <span class="keyword">by</span> <span class="keyword">isnull</span>(add_time), add_time <span class="keyword">desc</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="日期操作"><a href="#日期操作" class="headerlink" title="日期操作"></a>日期操作</h2><p>当前时间，oracle使用<code>sysdate</code>,mysql使用<code>now()</code></p>
+<h3 id="1-sysdate-数字"><a href="#1-sysdate-数字" class="headerlink" title="1. sysdate +/- 数字"></a>1. sysdate +/- 数字</h3><p>加减数字，这个数字默认单位是 天，所以，实际使用时，可能会遇到以下值：</p>
+<ul>
+<li>1 / 24，一天 24 小时，所以这是小时</li>
+<li>1 / 1440，一天 1440 分钟，所以这是分钟</li>
+<li>其它值，请根据实际值转换成 小时，分钟 等其它值</li>
+</ul>
+<p>Oracle：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> *</span><br><span class="line"><span class="keyword">FROM</span> company</span><br><span class="line"><span class="keyword">WHERE</span> add_time &gt; <span class="keyword">SYSDATE</span> - <span class="number">5</span> / <span class="number">1440</span>;</span><br></pre></td></tr></table></figure>
+
+<p>MySQL：</p>
+<p>5 / 1440，可以看出来是 5 分钟，所以使用 interval 5 minute。</p>
+<p>示例使用interval -5 minute，及 date_add，建议使用 date_sub 代替 date_add 与 负数。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> *</span><br><span class="line"><span class="keyword">FROM</span> company</span><br><span class="line"><span class="keyword">WHERE</span> add_time &gt; <span class="keyword">date_add</span>(<span class="keyword">now</span>(), <span class="built_in">interval</span> - <span class="number">5</span> <span class="keyword">minute</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-sysdate-date-或-date-sysdate"><a href="#2-sysdate-date-或-date-sysdate" class="headerlink" title="2. sysdate - date 或 date - sysdate"></a>2. sysdate - date 或 date - sysdate</h3><p>oracle：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> (expire_time - <span class="keyword">sysdate</span>) &gt; <span class="number">60</span></span><br></pre></td></tr></table></figure>
+
+<p>mysql：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">DATEDIFF</span>(expire_time, <span class="keyword">now</span>()) &gt; <span class="number">60</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-add-months"><a href="#3-add-months" class="headerlink" title="3. add_months"></a>3. add_months</h3><p><code>add_months</code> 可以直接使用 <code>date_add</code> / <code>date_sub</code>，但是在月末时，Oracle 与 MySQL 有差异。</p>
+<ul>
+<li>月末，Oracle 总是返回月末值，如 2020-04-30 加减 1 个月，分别是 2020-05-31 及 2020-03-31</li>
+<li>而 MySQL 就是直接 加减 1 个月，只有超出时，才调整。</li>
+</ul>
+<h3 id="4-字符串转成日期"><a href="#4-字符串转成日期" class="headerlink" title="4. 字符串转成日期"></a>4. 字符串转成日期</h3><p>Oracle:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">to_date(?, 'yyyy-mm-dd hh24:mi:ss')</span><br></pre></td></tr></table></figure>
+
+<p>MySQL:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">str_to_date(?, '%Y-%m-%d %H:%i:%s')</span><br></pre></td></tr></table></figure>
+
+<p>常见格式对照表：</p>
+<table>
+<thead>
+<tr>
+<th>Oracle (不区分大小写)</th>
+<th>解释</th>
+<th>MySQL (区分大小写)</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>YYYY</td>
+<td>4位年</td>
+<td>%Y</td>
+<td>还有SYYYY，公元前使用 负数</td>
+</tr>
+<tr>
+<td>YY</td>
+<td>2位年</td>
+<td>%y</td>
+<td></td>
+</tr>
+<tr>
+<td>MM</td>
+<td>月</td>
+<td>%m</td>
+<td></td>
+</tr>
+<tr>
+<td>DD</td>
+<td>日</td>
+<td>%d</td>
+<td></td>
+</tr>
+<tr>
+<td>HH24</td>
+<td>时（0-23）</td>
+<td>%H</td>
+<td></td>
+</tr>
+<tr>
+<td>HH</td>
+<td>时（1-12）</td>
+<td>%h</td>
+<td>HH12 与 HH 一样</td>
+</tr>
+<tr>
+<td>MI</td>
+<td>分（0-59）</td>
+<td>%i</td>
+<td></td>
+</tr>
+<tr>
+<td>SS</td>
+<td>秒（0-59）</td>
+<td>%s</td>
+<td></td>
+</tr>
+</tbody></table>
+<h3 id="小总结"><a href="#小总结" class="headerlink" title="小总结"></a>小总结</h3><ul>
+<li>sysdate + 数字，使用 date_add</li>
+<li>sysdate - 数字，使用 date_sub</li>
+<li>sysdate - date 或 date - sysdate，使用 datediff</li>
+</ul>
+<h2 id="to-char"><a href="#to-char" class="headerlink" title="to_char"></a>to_char</h2><p>oracle有几下三种格式</p>
+<h3 id="1-to-char-character"><a href="#1-to-char-character" class="headerlink" title="1. to_char(character)"></a>1. to_char(character)</h3><p>对应mysql,使用<code>cast x as char</code> 或者 <code>convert</code></p>
+<h3 id="2-to-char-datetime-fmt"><a href="#2-to-char-datetime-fmt" class="headerlink" title="2. to_char(datetime [, fmt])"></a>2. to_char(datetime [, fmt])</h3><p>没有 fmt 的话，使用默认格式,如果有 fmt 的话，使用 <code>date_format</code></p>
+<h3 id="3-to-char-number"><a href="#3-to-char-number" class="headerlink" title="3. to_char(number)"></a>3. to_char(number)</h3><p>没有 fmt 的话，就是把数字转成字符，使用 <code>cast x as char</code> 或者  <code>convert(x, char)</code>，也可以使用 <code>concat(x)</code> [不建议],有 fmt 的话，转成特定格式</p>
+<p>示例：</p>
+<p>Oracle：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">to_char(expire_time, 'yyyy-MM-dd')</span><br></pre></td></tr></table></figure>
+
+<p>MySQL:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">date_format(report_end_date, '%Y-%m-%d')</span><br></pre></td></tr></table></figure>
+
+<h2 id="to-number"><a href="#to-number" class="headerlink" title="to_number"></a>to_number</h2><p>Oracle：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">to_number(x)</span><br></pre></td></tr></table></figure>
+
+<p>MySQL:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cast(x as signed)</span><br></pre></td></tr></table></figure>
+
+<h2 id="to-date"><a href="#to-date" class="headerlink" title="to_date"></a>to_date</h2><p>看<a href="#日期操作">日期操作</a>章节</p>
+<h2 id="decode"><a href="#decode" class="headerlink" title="decode"></a>decode</h2><p>Oracle 和 MySQL 都有decode函数，但是含义完全不一样。</p>
+<p>在 Oracle 下，decode 类似 switch-case，如:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">decode(a, 1, 2, 3, 4, 5)</span><br></pre></td></tr></table></figure>
+
+<p>意思就是 a 为 1 时，返回 2；为 3 时，返回 4；其它返回 5。</p>
+<p>对应Oracle的decode功能，MySQL可以使用 case-when。有两种风格：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">case</span> <span class="string">'a'</span> <span class="keyword">when</span> <span class="number">1</span> <span class="keyword">then</span> <span class="number">2</span> <span class="keyword">when</span> <span class="number">3</span> <span class="keyword">then</span> <span class="number">4</span> <span class="keyword">else</span> <span class="number">5</span> <span class="keyword">end</span>;</span><br></pre></td></tr></table></figure>
+
+<p>或者</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">case</span> <span class="keyword">when</span> <span class="string">'a'</span> = <span class="number">1</span> <span class="keyword">then</span> <span class="number">2</span> <span class="keyword">when</span> <span class="string">'a'</span> = <span class="number">3</span> <span class="keyword">then</span> <span class="number">4</span> <span class="keyword">else</span> <span class="number">5</span> <span class="keyword">end</span>;</span><br></pre></td></tr></table></figure>
+
+<p>如果涉及 null，需要使用 is null 判断，只能使用第二个风格；如果条件较少，直接使用 if 即可。</p>
+<h2 id="gt-concat-ws"><a href="#gt-concat-ws" class="headerlink" title="|| -&gt; concat_ws"></a>|| -&gt; concat_ws</h2><p>Oracle 中，空字符串与 NULL 等价；</p>
+<p>Oracle 中的 || 等同于 concat，但略有差异，主要是 null。</p>
+<p>在 Oracle 中，字符串 与 null 拼接，不会返回 null；而 MySQL 返回 null。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- Oracle:</span></span><br><span class="line"><span class="keyword">select</span> <span class="string">'a'</span> || <span class="literal">null</span> <span class="keyword">from</span> dual;</span><br><span class="line"><span class="comment">-- MySQL:</span></span><br><span class="line"><span class="keyword">select</span> <span class="keyword">concat</span>(<span class="string">'a'</span>, <span class="literal">null</span>);</span><br></pre></td></tr></table></figure>
+
+<p>使用 concat_ws ，会跳过 null 值。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">concat_ws</span>(<span class="string">''</span>, <span class="string">'a'</span>, <span class="literal">null</span>);</span><br></pre></td></tr></table></figure>
+
+<p>最佳方案：</p>
+<ul>
+<li>通用情况：<code>a || b</code> =&gt; <code>nullif(concat_ws(&#39;&#39;, a, b), &#39;&#39;)</code></li>
+<li>特殊情况：<code>a || &#39;&#39;</code> =&gt; <code>nullif(concat_ws(&#39;&#39;, a), &#39;&#39;)</code>，也就是接着的字符串在 MySQL 中是空字符串，可以直接去掉</li>
+<li>如果确定没有 null 值（比如作为查询参数），可以直接使用 concat函数</li>
+</ul>
+<p>测试用例:</p>
+<table>
+<thead>
+<tr>
+<th>Oracle</th>
+<th>Mysql</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>‘a’ &#124;&#124; ‘b’</td>
+<td>nullif(concat_ws(‘’, ‘a’, ‘b’), ‘’)</td>
+<td>‘ab’</td>
+</tr>
+<tr>
+<td>‘a’ &#124;&#124; null</td>
+<td>nullif(concat_ws(‘’, ‘a’, null), ‘’)</td>
+<td>‘a’</td>
+</tr>
+<tr>
+<td>null &#124;&#124; ‘b’</td>
+<td>nullif(concat_ws(‘’, null, ‘b’), ‘’)</td>
+<td>‘b’</td>
+</tr>
+<tr>
+<td>null &#124;&#124; null</td>
+<td>nullif(concat_ws(‘’, null, null), ‘’)</td>
+<td>null</td>
+</tr>
+</tbody></table>
+<p>特殊场景：</p>
+<table>
+<thead>
+<tr>
+<th>Oracle</th>
+<th>Mysql</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>a &#124;&#124; ‘’</td>
+<td>concat_ws(‘’, a)</td>
+</tr>
+</tbody></table>
+<p>解释一下：上面的特殊场景可以理解为，如果 a 不是 null，返回 a；否则返回空字符串</p>
+<h2 id="with语句"><a href="#with语句" class="headerlink" title="with语句"></a>with语句</h2><p>MySQL 8.0 才支持 with 语句。</p>
+<h2 id="left-join"><a href="#left-join" class="headerlink" title="(+) / left join"></a>(+) / left join</h2><p>在 Oracle 中，可能使用 comma join，然后在 where 中使用 (+) 表示实际的 join。 加号在哪边，哪边就可能有 null，然后对应使用 left / right join</p>
+<p>mysql直接使用join关键字</p>
+<h2 id="窗口函数-row-number-rank"><a href="#窗口函数-row-number-rank" class="headerlink" title="窗口函数 row_number / rank"></a>窗口函数 row_number / rank</h2><p>MySQL 5.7 不支持窗口函数，且性能也并不太好。窗口函数多用于实现 分组 TOP 1 及 TOP N 问题。</p>
+<p>MySQL8已经支持</p>
+<h2 id="length-char-length"><a href="#length-char-length" class="headerlink" title="length | char_length"></a>length | char_length</h2><blockquote>
+<p>Oracle 中，空字符串与 NULL 等价</p>
+</blockquote>
+<p>Oracle 中  length 表示 字符串 的长度，与 MySQL 的 char_length 等价，但是对于 空字符串 略有差异。</p>
+<table>
+<thead>
+<tr>
+<th>字符串</th>
+<th>Oracle</th>
+<th>MySQL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>null</td>
+<td>null</td>
+<td>null</td>
+</tr>
+<tr>
+<td>(空)</td>
+<td>null</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<h2 id="instr-locate"><a href="#instr-locate" class="headerlink" title="instr | locate"></a>instr | locate</h2><p>Oracle 的 instr 可能支持多个参数，如：</p>
+<ul>
+<li>instr(string, substring)</li>
+<li>instr(string, substring, postion)</li>
+<li>instr(string, substring, position, occurrence)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Oracle</th>
+<th>MySQL</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>instr(string, substring)</td>
+<td>instr(string, substring) 或 locate(substring, string)</td>
+<td>MySQL推荐使用 instr</td>
+</tr>
+<tr>
+<td>instr(string, substring, position)</td>
+<td>locate(substring, string, position)</td>
+<td></td>
+</tr>
+<tr>
+<td>instr(string, substring, position, occurrence)</td>
+<td>-</td>
+<td></td>
+</tr>
+</tbody></table>
+<h2 id="trunc-date-trunc-number"><a href="#trunc-date-trunc-number" class="headerlink" title="trunc(date), trunc(number)"></a>trunc(date), trunc(number)</h2><table>
+<thead>
+<tr>
+<th>Oracle</th>
+<th>MySQL</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>trunc(数字)</td>
+<td>truncate(数字)</td>
+<td></td>
+</tr>
+<tr>
+<td>trunc(数字，小数位数)</td>
+<td>truncate(数字，小数位数)</td>
+<td>小数位数可为负</td>
+</tr>
+<tr>
+<td>trunc(日期)</td>
+<td>date(日期)</td>
+<td></td>
+</tr>
+<tr>
+<td>trunc(日期，格式)</td>
+<td>date_format(日期，格式) + cast</td>
+<td>date_format 返回字符格式</td>
+</tr>
+</tbody></table>
+<p>一些常见的日期操作场景，如下：</p>
+<table>
+<thead>
+<tr>
+<th>说明</th>
+<th>Oracle (不区分大小写)</th>
+<th>MySQL (区分大小写)</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>到月</td>
+<td>TRUNC(x, ‘MM’)</td>
+<td>cast(date_format(x, ‘%Y-%m-01’) as date)</td>
+<td>非返回数据可以略过 cast</td>
+</tr>
+<tr>
+<td>到日</td>
+<td>TRUNC(x) 或 TRUNC(x, ‘DD’)</td>
+<td>date(x)</td>
+<td></td>
+</tr>
+<tr>
+<td>到时</td>
+<td>TRUNC(x, ‘HH’)</td>
+<td>cast(date_format(x, ‘%Y-%m-%d %H:00:00’) as datetime)</td>
+<td>非返回数据可以略过 cast</td>
+</tr>
+<tr>
+<td>到分</td>
+<td>TRUNC(x, ‘MI’)</td>
+<td>cast(date_format(x, ‘%Y-%m-%d %H:%i:00’) as datetime)</td>
+<td>非返回数据可以略过 cast</td>
+</tr>
+</tbody></table>
+<h2 id="正则匹配"><a href="#正则匹配" class="headerlink" title="正则匹配"></a>正则匹配</h2><p>Oracle:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> *</span><br><span class="line"><span class="keyword">from</span> company</span><br><span class="line"><span class="keyword">where</span> <span class="keyword">regexp_like</span>(KEYWORD, <span class="string">'^[0-9I]'</span>);</span><br></pre></td></tr></table></figure>
+
+<p>MySQL:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> *</span><br><span class="line"><span class="keyword">from</span> company</span><br><span class="line"><span class="keyword">where</span> KEYWORD regexp <span class="string">'^[0-9Ii]'</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="随机排序"><a href="#随机排序" class="headerlink" title="随机排序"></a>随机排序</h2><ul>
+<li><code>dbms_random.vaule</code>：生成一个指定范围的38位随机小数（小数点后38位），若不指定范围则默认为范围为[0,1)的随机数。</li>
+<li><code>dbms_random.random</code>：生成一个从[-2^31, 2^31)的整数值，注意，区间为左闭右开。</li>
+<li><code>dbms_random.normal</code>：生成一个符合正态分布的随机数，此正态分布标准偏差为1，期望值为0。这个函数返回的数值中有68%是介于-1与+1之间， 95%介于-2与+2之间，99%介于-3与+3之间。</li>
+</ul>
+<p>Oracle:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> *</span><br><span class="line"><span class="keyword">from</span> company</span><br><span class="line"><span class="keyword">where</span> address=<span class="string">'china'</span></span><br><span class="line"><span class="keyword">order</span> <span class="keyword">by</span> dbms_random.value</span><br></pre></td></tr></table></figure>
+
+<p>MySQL:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> *</span><br><span class="line"><span class="keyword">from</span> company</span><br><span class="line"><span class="keyword">where</span> address=<span class="string">'china'</span></span><br><span class="line"><span class="keyword">order</span> <span class="keyword">by</span> <span class="keyword">RAND</span>()</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>李 俊 秋
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://ancient2now.github.io/blog/2020/08/web-server/mysql-oracle-diff/" title="Oracle 与 MySQL 的差异">https://ancient2now.github.io/blog/2020/08/web-server/mysql-oracle-diff/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/blog/tags/MySQL/" rel="tag"># MySQL</a>
+              <a href="/blog/tags/Oracle/" rel="tag"># Oracle</a>
+          </div>
+
+        <div>
+  
+    <div style="text-align:center;color:#bfbfbf;font-size:16px;">
+      <span>-------- 本文结束 </span>
+      <i class="fa fa-paw"></i>
+      <span> 感谢阅读 --------</span>
+    </div>
+  
+</div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/blog/2020/07/Scala/install-gitbucket/" rel="prev" title="Scala.01. Install 搭建gitbucket环境">
+      <i class="fa fa-chevron-left"></i> Scala.01. Install 搭建gitbucket环境
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#dual特殊表"><span class="nav-text">dual特殊表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#null-空字符串-0"><span class="nav-text">null | 空字符串 | 0</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-substr"><span class="nav-text">1. substr</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-trim"><span class="nav-text">2. trim</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nvl-nvl2-ifnull"><span class="nav-text">nvl | nvl2 | ifnull</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#排序的字段有null值"><span class="nav-text">排序的字段有null值</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#日期操作"><span class="nav-text">日期操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-sysdate-数字"><span class="nav-text">1. sysdate +&#x2F;- 数字</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-sysdate-date-或-date-sysdate"><span class="nav-text">2. sysdate - date 或 date - sysdate</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-add-months"><span class="nav-text">3. add_months</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-字符串转成日期"><span class="nav-text">4. 字符串转成日期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#小总结"><span class="nav-text">小总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#to-char"><span class="nav-text">to_char</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-to-char-character"><span class="nav-text">1. to_char(character)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-to-char-datetime-fmt"><span class="nav-text">2. to_char(datetime [, fmt])</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-to-char-number"><span class="nav-text">3. to_char(number)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#to-number"><span class="nav-text">to_number</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#to-date"><span class="nav-text">to_date</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#decode"><span class="nav-text">decode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gt-concat-ws"><span class="nav-text">|| -&gt; concat_ws</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#with语句"><span class="nav-text">with语句</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#left-join"><span class="nav-text">(+) &#x2F; left join</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#窗口函数-row-number-rank"><span class="nav-text">窗口函数 row_number &#x2F; rank</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#length-char-length"><span class="nav-text">length | char_length</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#instr-locate"><span class="nav-text">instr | locate</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#trunc-date-trunc-number"><span class="nav-text">trunc(date), trunc(number)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正则匹配"><span class="nav-text">正则匹配</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#随机排序"><span class="nav-text">随机排序</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <a href="/">
+    <img class="site-author-image" itemprop="image" alt="李 俊 秋"
+      src="/blog/images/profile/profile_thumb.jpg">
+  </a>
+  <p class="site-author-name" itemprop="name">李 俊 秋</p>
+  <div class="site-description" itemprop="description">out of sight, out of mind</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/blog/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/blog/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/blog/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ancient2now" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;ancient2now" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ancient2now@qq.com" title="E-Mail → mailto:ancient2now@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/blog/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      友情链接
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://resume.akikun.com/" title="https:&#x2F;&#x2F;resume.akikun.com" rel="noopener" target="_blank">个人简历</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">李 俊 秋</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.1.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.ui.min.js"></script>
+
+<script src="/blog/js/utils.js"></script>
+
+<script src="/blog/js/motion.js"></script>
+
+
+<script src="/blog/js/schemes/muse.js"></script>
+
+
+<script src="/blog/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/npm/jquery@2.1.3/dist/jquery.min.js"></script>
+  <script src="/js/wobblewindow.js"></script>
+  <script>
+    //只在桌面版网页启用特效
+    if( window.innerWidth > 768  ){
+      $(document).ready(function () {
+        
+          $('#header').wobbleWindow({
+            radius: 50,
+            movementTop: false,
+            movementLeft: false,
+            movementRight: false,
+            debug: false,
+          });
+        
+
+        
+
+        
+          $('#footer').wobbleWindow({
+            radius: 50,
+            movementBottom: false,
+            movementLeft: false,
+            movementRight: false,
+            position: 'absolute',
+            debug: false,
+          });
+        
+      });
+    }
+  </script>
+
+  
+
+  <script async src="/js/cursor/fireworks.js"></script>
+
+
+</body>
+</html>

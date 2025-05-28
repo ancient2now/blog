@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/profile/profile_thumb.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/profile/profile_thumb.jpg">
+
+<link rel="stylesheet" href="/blog/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ancient2now.github.io","root":"/blog/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="主要介绍了Java底层的基础知识，也算是学习高并发的基础知识，其中涉及到JMM，以及两个常用的关键子volatile和synchronized，以及CAS无锁算法，通过深入了解这些点，从而了解高并发会遇到哪些问题，进而开始深入学习并发编程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java高并发：基本概念">
+<meta property="og:url" content="https://ancient2now.github.io/blog/2020/07/Java/juc1-base/index.html">
+<meta property="og:site_name" content="Li Junqiu&#39;s Blog">
+<meta property="og:description" content="主要介绍了Java底层的基础知识，也算是学习高并发的基础知识，其中涉及到JMM，以及两个常用的关键子volatile和synchronized，以及CAS无锁算法，通过深入了解这些点，从而了解高并发会遇到哪些问题，进而开始深入学习并发编程。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-07-25T11:38:57.000Z">
+<meta property="article:modified_time" content="2025-05-28T12:45:11.240Z">
+<meta property="article:author" content="李 俊 秋">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="JUC">
+<meta property="article:tag" content="高并发">
+<meta property="article:tag" content="多线程">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://ancient2now.github.io/blog/2020/07/Java/juc1-base/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Java高并发：基本概念 | Li Junqiu's Blog</title>
+  
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?1b1b4c07c3486b17d72642804f132fb4";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/blog/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Li Junqiu's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/blog/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/blog/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/blog/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/blog/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="https://ancient2now.github.io/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://ancient2now.github.io/blog/2020/07/Java/juc1-base/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/blog/images/profile/profile_thumb.jpg">
+      <meta itemprop="name" content="李 俊 秋">
+      <meta itemprop="description" content="out of sight, out of mind">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Li Junqiu's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java高并发：基本概念
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-07-25 19:38:57" itemprop="dateCreated datePublished" datetime="2020-07-25T19:38:57+08:00">2020-07-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-05-28 20:45:11" itemprop="dateModified" datetime="2025-05-28T20:45:11+08:00">2025-05-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">主要介绍了Java底层的基础知识，也算是学习高并发的基础知识，其中涉及到JMM，以及两个常用的关键子volatile和synchronized，以及CAS无锁算法，通过深入了解这些点，从而了解高并发会遇到哪些问题，进而开始深入学习并发编程。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="JVM"><a href="#JVM" class="headerlink" title="JVM"></a>JVM</h2><p>Java虚拟机 (Java Virtual Machine)</p>
+<h2 id="JMM"><a href="#JMM" class="headerlink" title="JMM"></a>JMM</h2><p>Java内存模型 (Java Memory Model)，简称JMM 本身是一种抽象的概念，并不真实存在，它描述的是一组规则或规范，通过这组规范定义了程序中各个变量（包括实例字段，静态字段和构成数组对象的元素）的访问方式。</p>
+<p>JMM对于同步的规定：</p>
+<ol>
+<li>线程解锁前，必须把共享变量的值刷新成<code>主内存</code></li>
+<li>线程加锁前，必须读取主内存的最新值到<code>自己的工作内存</code></li>
+<li>加锁和解锁是同一把锁</li>
+</ol>
+<p>主内存是共享内存区域，是所有线程都可以访问的，也就是我们常说的内存。但是线程对变量的操作(读取赋值等)必须在工作内存中进行，首先就是将变量从主内存拷贝到自己的工作内存空间，然后对变量进行操作，操作完成后再将变量写回主内存。每个线程都有自己的工作空间，线程间的工作内存不能互相访问。至于为什么要拷贝，主要因为CPU的效率远远高于内存。拷贝到自己的工作内存，实际上就是拷贝到CPU的缓存中去。</p>
+<p>JMM特性：</p>
+<ol>
+<li>可见性</li>
+<li>原子性</li>
+<li>有序性</li>
+</ol>
+<h2 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a>volatile</h2><p>英[ˈvɒlətaɪl]，美[ˈvɑːlətl]</p>
+<p>是Java虚拟机提供的轻量级的同步机制，有三大特性：</p>
+<ol>
+<li>保证可见性</li>
+<li><code>不保证原子性</code> (synchronized保证原子性)</li>
+<li>禁止指令重排序</li>
+</ol>
+<h3 id="可见性与非原子性"><a href="#可见性与非原子性" class="headerlink" title="可见性与非原子性"></a>可见性与非原子性</h3><p>可见性就是一个线程修改了主内存的时候，其他线程马上获得通知。</p>
+<p>如何解决非原子性问题？比如i++，推荐使用AtomicInteger这些类，其次可以使用synchronized之类的解决方法</p>
+<h3 id="指令重排"><a href="#指令重排" class="headerlink" title="指令重排"></a>指令重排</h3><p>计算机在执行程序的时候，为了提高性能，编译器和处理器会对指令做重排： 【1.源代码 –&gt; 2.编译器优化的重排 –&gt; 3.指令并行的重排 –&gt; 4.内存系统的重排 –&gt; 最终执行的指令】 其中2,3,4都有可能发生指令重排</p>
+<ol>
+<li>单线程环境里面也会有指令重排，但是会确保执行结果和代码顺序执行的结果一致，所以指令重排在单线程下完全没有问题</li>
+<li>处理器在进行指令重排序的时候必须要考虑指令之间的<code>数据依赖性</code></li>
+<li>多线程环境中线程交替执行，由于编译器优化重排的存在，两个线程中使用的变量能否保证一致性是无法确定的，结果无法预测</li>
+</ol>
+<p>指令重排序可能引入的问题，如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReSortDemo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> a = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">boolean</span> flag = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">fun01</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        a = <span class="number">1</span>;  <span class="comment">// 语句1</span></span><br><span class="line">        flag = <span class="keyword">true</span>;  <span class="comment">// 语句2</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span> fun02 &#123;</span><br><span class="line">        <span class="keyword">if</span> (flag) &#123;fuzhi   <span class="comment">// 语句4</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>想象一下，多线程场景，<code>fun01</code>方法内部语句发生指令重排(因为a和flag没有数据依赖性)，变成<code>先执行语句2再执行语句1</code>。当先执行完语句2还没有执行语句1的时候，另外线程执行fun02方法，此时由于<code>flag==true</code>所以会执行里面的语句3，并且打印5,因为语句1<code>a=1</code>还没有执行，所以结果是5。预期的结果应该是6，发生线程不安全问题。解决方法就是给变量加上volatile修饰符。</p>
+<h4 id="volatile应用于懒汉单例，就是因为指令重排问题"><a href="#volatile应用于懒汉单例，就是因为指令重排问题" class="headerlink" title="volatile应用于懒汉单例，就是因为指令重排问题"></a>volatile应用于懒汉单例，就是因为指令重排问题</h4><h2 id="CAS"><a href="#CAS" class="headerlink" title="CAS"></a>CAS</h2><h3 id="Compare-And-Swap-介绍"><a href="#Compare-And-Swap-介绍" class="headerlink" title="Compare And Swap 介绍"></a>Compare And Swap 介绍</h3><p>可以通过Java中AtomicInteger类中的<code>getAndIncrement</code>方法来理解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">getAndAddInt</span><span class="params">(Object o, <span class="keyword">long</span> offset, <span class="keyword">int</span> delta)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> v;</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        v = getIntVolatile(o, offset);</span><br><span class="line">    &#125; <span class="keyword">while</span> (!compareAndSwapInt(o, offset, v, v + delta));</span><br><span class="line">    <span class="keyword">return</span> v;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>比如我想i++，原先i=5，先做运算然后赋值，赋值时比较下当前i是不是还是5，如果i还是5，就直接赋值了，如果不是，说明其他线程做了修改，就需要将这个新的值重新运算,再判断赋值，如果原先的值又变了，再运算判断赋值…</p>
+<h3 id="CAS优点"><a href="#CAS优点" class="headerlink" title="CAS优点"></a>CAS优点</h3><p>不需要加锁，也就减少线程上下文切换带来的消耗，线程切换好像设计内核态和用户态，这个以后再补充。// TODO</p>
+<h3 id="CAS有哪些缺点以及问题"><a href="#CAS有哪些缺点以及问题" class="headerlink" title="CAS有哪些缺点以及问题"></a>CAS有哪些缺点以及问题</h3><h4 id="1-一直循环问题"><a href="#1-一直循环问题" class="headerlink" title="1. 一直循环问题"></a>1. 一直循环问题</h4><p>会锁升级，计算机已经做了优化，不需要在代码中体现</p>
+<h4 id="2-ABA问题"><a href="#2-ABA问题" class="headerlink" title="2. ABA问题"></a>2. ABA问题</h4><p>Java中的<code>AtomicStampedReference</code>类有解决这个问题，原理是加了一个stamp，相当于一个版本号，如果有修改，版本号就会有变化，这样当从A-&gt;B-&gt;A就会知道修改过。如果不在意这种修改，其实是可以不用使用stamp的，如果在意这种修改就可以使用这种方法。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>李 俊 秋
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://ancient2now.github.io/blog/2020/07/Java/juc1-base/" title="Java高并发：基本概念">https://ancient2now.github.io/blog/2020/07/Java/juc1-base/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/blog/tags/Java/" rel="tag"># Java</a>
+              <a href="/blog/tags/JUC/" rel="tag"># JUC</a>
+              <a href="/blog/tags/%E9%AB%98%E5%B9%B6%E5%8F%91/" rel="tag"># 高并发</a>
+              <a href="/blog/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># 多线程</a>
+          </div>
+
+        <div>
+  
+    <div style="text-align:center;color:#bfbfbf;font-size:16px;">
+      <span>-------- 本文结束 </span>
+      <i class="fa fa-paw"></i>
+      <span> 感谢阅读 --------</span>
+    </div>
+  
+</div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/blog/2020/07/essay/plan-2020/" rel="prev" title="2020年规划">
+      <i class="fa fa-chevron-left"></i> 2020年规划
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/blog/2020/07/Scala/install-gitbucket/" rel="next" title="Scala.01. Install 搭建gitbucket环境">
+      Scala.01. Install 搭建gitbucket环境 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#JVM"><span class="nav-text">JVM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JMM"><span class="nav-text">JMM</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#volatile"><span class="nav-text">volatile</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#可见性与非原子性"><span class="nav-text">可见性与非原子性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#指令重排"><span class="nav-text">指令重排</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#volatile应用于懒汉单例，就是因为指令重排问题"><span class="nav-text">volatile应用于懒汉单例，就是因为指令重排问题</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CAS"><span class="nav-text">CAS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Compare-And-Swap-介绍"><span class="nav-text">Compare And Swap 介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CAS优点"><span class="nav-text">CAS优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CAS有哪些缺点以及问题"><span class="nav-text">CAS有哪些缺点以及问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-一直循环问题"><span class="nav-text">1. 一直循环问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-ABA问题"><span class="nav-text">2. ABA问题</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <a href="/">
+    <img class="site-author-image" itemprop="image" alt="李 俊 秋"
+      src="/blog/images/profile/profile_thumb.jpg">
+  </a>
+  <p class="site-author-name" itemprop="name">李 俊 秋</p>
+  <div class="site-description" itemprop="description">out of sight, out of mind</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/blog/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/blog/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/blog/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ancient2now" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;ancient2now" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ancient2now@qq.com" title="E-Mail → mailto:ancient2now@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/blog/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      友情链接
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://resume.akikun.com/" title="https:&#x2F;&#x2F;resume.akikun.com" rel="noopener" target="_blank">个人简历</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">李 俊 秋</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.1.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.ui.min.js"></script>
+
+<script src="/blog/js/utils.js"></script>
+
+<script src="/blog/js/motion.js"></script>
+
+
+<script src="/blog/js/schemes/muse.js"></script>
+
+
+<script src="/blog/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/npm/jquery@2.1.3/dist/jquery.min.js"></script>
+  <script src="/js/wobblewindow.js"></script>
+  <script>
+    //只在桌面版网页启用特效
+    if( window.innerWidth > 768  ){
+      $(document).ready(function () {
+        
+          $('#header').wobbleWindow({
+            radius: 50,
+            movementTop: false,
+            movementLeft: false,
+            movementRight: false,
+            debug: false,
+          });
+        
+
+        
+
+        
+          $('#footer').wobbleWindow({
+            radius: 50,
+            movementBottom: false,
+            movementLeft: false,
+            movementRight: false,
+            position: 'absolute',
+            debug: false,
+          });
+        
+      });
+    }
+  </script>
+
+  
+
+  <script async src="/js/cursor/fireworks.js"></script>
+
+
+</body>
+</html>

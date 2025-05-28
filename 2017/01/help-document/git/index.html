@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/profile/profile_thumb.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/profile/profile_thumb.jpg">
+
+<link rel="stylesheet" href="/blog/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ancient2now.github.io","root":"/blog/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="自己记录了git的常用指令，由浅入深，以及记录了自己在实际使用中的一些场景的解决方案">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Git Help Document">
+<meta property="og:url" content="https://ancient2now.github.io/blog/2017/01/help-document/git/index.html">
+<meta property="og:site_name" content="Li Junqiu&#39;s Blog">
+<meta property="og:description" content="自己记录了git的常用指令，由浅入深，以及记录了自己在实际使用中的一些场景的解决方案">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-01-07T10:05:49.000Z">
+<meta property="article:modified_time" content="2025-05-28T12:45:11.240Z">
+<meta property="article:author" content="李 俊 秋">
+<meta property="article:tag" content="git">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://ancient2now.github.io/blog/2017/01/help-document/git/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Git Help Document | Li Junqiu's Blog</title>
+  
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?1b1b4c07c3486b17d72642804f132fb4";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/blog/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Li Junqiu's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/blog/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/blog/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/blog/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/blog/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="https://ancient2now.github.io/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://ancient2now.github.io/blog/2017/01/help-document/git/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/blog/images/profile/profile_thumb.jpg">
+      <meta itemprop="name" content="李 俊 秋">
+      <meta itemprop="description" content="out of sight, out of mind">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Li Junqiu's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Git Help Document
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2017-01-07 18:05:49" itemprop="dateCreated datePublished" datetime="2017-01-07T18:05:49+08:00">2017-01-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-05-28 20:45:11" itemprop="dateModified" datetime="2025-05-28T20:45:11+08:00">2025-05-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/Help-Document/" itemprop="url" rel="index"><span itemprop="name">Help Document</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">自己记录了git的常用指令，由浅入深，以及记录了自己在实际使用中的一些场景的解决方案</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>参考《GitHub入门与实践》-大塚弘记著</p>
+</blockquote>
+<h2 id="一-配置"><a href="#一-配置" class="headerlink" title="一. 配置"></a>一. 配置</h2><p>如果第一次使用git，需要设置署名和邮箱<br><code>git config --global user.name &quot;username&quot;</code><br><code>git config --global user.email &quot;your email&quot;</code>  </p>
+<p>新建sshkey，省略ssh的使用  <code>ssh-keygen -t rsa -C &quot;youremail&quot;</code></p>
+<h2 id="二-基础指令"><a href="#二-基础指令" class="headerlink" title="二. 基础指令"></a>二. 基础指令</h2><p>克隆github上的仓库   <code>git clone git@github.com:vagabondize/Hello-World.git</code></p>
+<p>获取远程仓库的更新 <code>git pull</code></p>
+<p>查看仓库上的更新状况 <code>git status</code>  </p>
+<p>向暂存区中添加文件helloworld.php <code>git add helloworld.php</code></p>
+<p>添加本地所有改变的状态 <code>git add .</code></p>
+<p>删除github中的文件夹，本地保留 <code>git rm -r --cached some-directory</code>  </p>
+<p>保存仓库的历史记录, 引号里是提交信息，是对这次提交的一个概述 <code>git commit -m &quot;add hello-world by php&quot;</code></p>
+<p>推送到远程仓库中 <code>git push</code></p>
+<p>接下来的三行可以让你git push的时候无需输入github的用户名和密码<br><code>git remote rm origin</code><br><code>git remote add origin git@github.com:(your github name)/(your repository name)</code><br><code>git push -u origin master</code>  </p>
+<p>查看日志 <code>git log</code></p>
+<p>git log 后面加上目录名，便会只显示该目录下日志,加上 -p 就会显示文件前后的差别 <code>git log -p README.md</code></p>
+<p>查看当前工作树与暂存区的区别 <code>git diff</code>  </p>
+<h2 id="三-分支操作"><a href="#三-分支操作" class="headerlink" title="三. 分支操作"></a>三. 分支操作</h2><p>创建分支feature-A <code>git branch feature-A</code>  </p>
+<p>把当前操作切换到分支feature-A下 <code>git checkout feature-A</code></p>
+<p>查看分支 <code>git branch</code></p>
+<p>下面是合并分区，注意：要在分支feature-A中执行 <code>git merge --no--ff feature-A</code></p>
+<p>以图表形式查看分支 <code>git log --graph</code></p>
+<p>设置为本地仓库的远程仓库 <code>git remote add origin git@....</code></p>
+<h2 id="四-其他功能"><a href="#四-其他功能" class="headerlink" title="四. 其他功能"></a>四. 其他功能</h2><h3 id="git-stash"><a href="#git-stash" class="headerlink" title="git stash"></a>git stash</h3><p><a href="https://git-scm.com/book/zh/v1/Git-%E5%B7%A5%E5%85%B7-%E5%82%A8%E8%97%8F%EF%BC%88Stashing%EF%BC%89" target="_blank" rel="noopener">官方参考文档</a></p>
+<p>将修改的代码暂存 <code>git stash</code></p>
+<p>查看有哪些暂存代码 <code>git stash list</code></p>
+<p>取最新的暂存区代码 <code>git stash apply</code>, 或者自己指定暂存区代码 <code>git stash apply stash@{2}</code></p>
+<p>移除暂存区 <code>git stash drop stash@{0}</code></p>
+<p>可以使用 <code>git stash pop</code> 来取代码，同时立刻将其从暂存中移走</p>
+<h2 id="五-场景模拟"><a href="#五-场景模拟" class="headerlink" title="五. 场景模拟"></a>五. 场景模拟</h2><blockquote>
+<p>不考虑存在冲突的情况，遇到冲突自行处理</p>
+</blockquote>
+<h3 id="删除远程服务器文件同时保留本地文件"><a href="#删除远程服务器文件同时保留本地文件" class="headerlink" title="删除远程服务器文件同时保留本地文件"></a>删除远程服务器文件同时保留本地文件</h3><ul>
+<li>git rm –cached filename / -r directory</li>
+<li>git commit -m “xxx”</li>
+<li>git push</li>
+</ul>
+<h3 id="暂存代码"><a href="#暂存代码" class="headerlink" title="暂存代码"></a>暂存代码</h3><blockquote>
+<p>自己正在写新代码，突然有个500bug需要处理提交；总之就是，代码写了一半，需要暂存一下，解决如下</p>
+</blockquote>
+<h4 id="1-使用git的暂存区功能-stash"><a href="#1-使用git的暂存区功能-stash" class="headerlink" title="1. 使用git的暂存区功能 stash"></a>1. 使用git的暂存区功能 <a href="https://git-scm.com/book/zh/v1/Git-%E5%B7%A5%E5%85%B7-%E5%82%A8%E8%97%8F%EF%BC%88Stashing%EF%BC%89" target="_blank" rel="noopener">stash</a></h4><p>使用 <code>git stash</code> 指令暂存代码，将自上次commit后修改的代码全部存储在暂存区，看上去没有修改</p>
+<p>想要将修改的代码取出来可以使用 <code>git stash apply</code> (原修改的代码还在暂存区)和 <code>git stash pop</code> (原修改的代码立即从暂存区移除)将代码取出</p>
+<p>取出后继续开发代码</p>
+<h4 id="2-使用git的rebase功能"><a href="#2-使用git的rebase功能" class="headerlink" title="2. 使用git的rebase功能"></a>2. 使用git的rebase功能</h4><p>你可以就先commit代码，然后新切master分支解决bug提交，然后回来继续开发</p>
+<p>继续开发完成后commit代码，使用rebase功能将两次commit进行rebase, 合并为一个commit</p>
+<p><a href="https://www.jianshu.com/p/964de879904a" target="_blank" rel="noopener">点击参考博客</a></p>
+<h3 id="修改上一次commit-message"><a href="#修改上一次commit-message" class="headerlink" title="修改上一次commit message"></a>修改上一次commit message</h3><p><code>git commit --amend</code></p>
+<h3 id="撤销过去某次的commit"><a href="#撤销过去某次的commit" class="headerlink" title="撤销过去某次的commit"></a>撤销过去某次的commit</h3>
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>李 俊 秋
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://ancient2now.github.io/blog/2017/01/help-document/git/" title="Git Help Document">https://ancient2now.github.io/blog/2017/01/help-document/git/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/blog/tags/git/" rel="tag"># git</a>
+          </div>
+
+        <div>
+  
+    <div style="text-align:center;color:#bfbfbf;font-size:16px;">
+      <span>-------- 本文结束 </span>
+      <i class="fa fa-paw"></i>
+      <span> 感谢阅读 --------</span>
+    </div>
+  
+</div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/blog/2017/04/help-document/docker/" rel="next" title="docker初体验">
+      docker初体验 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-配置"><span class="nav-text">一. 配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-基础指令"><span class="nav-text">二. 基础指令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-分支操作"><span class="nav-text">三. 分支操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-其他功能"><span class="nav-text">四. 其他功能</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#git-stash"><span class="nav-text">git stash</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-场景模拟"><span class="nav-text">五. 场景模拟</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#删除远程服务器文件同时保留本地文件"><span class="nav-text">删除远程服务器文件同时保留本地文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#暂存代码"><span class="nav-text">暂存代码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-使用git的暂存区功能-stash"><span class="nav-text">1. 使用git的暂存区功能 stash</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-使用git的rebase功能"><span class="nav-text">2. 使用git的rebase功能</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#修改上一次commit-message"><span class="nav-text">修改上一次commit message</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#撤销过去某次的commit"><span class="nav-text">撤销过去某次的commit</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <a href="/">
+    <img class="site-author-image" itemprop="image" alt="李 俊 秋"
+      src="/blog/images/profile/profile_thumb.jpg">
+  </a>
+  <p class="site-author-name" itemprop="name">李 俊 秋</p>
+  <div class="site-description" itemprop="description">out of sight, out of mind</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/blog/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/blog/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/blog/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ancient2now" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;ancient2now" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ancient2now@qq.com" title="E-Mail → mailto:ancient2now@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/blog/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      友情链接
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://resume.akikun.com/" title="https:&#x2F;&#x2F;resume.akikun.com" rel="noopener" target="_blank">个人简历</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">李 俊 秋</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.1.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.ui.min.js"></script>
+
+<script src="/blog/js/utils.js"></script>
+
+<script src="/blog/js/motion.js"></script>
+
+
+<script src="/blog/js/schemes/muse.js"></script>
+
+
+<script src="/blog/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/npm/jquery@2.1.3/dist/jquery.min.js"></script>
+  <script src="/js/wobblewindow.js"></script>
+  <script>
+    //只在桌面版网页启用特效
+    if( window.innerWidth > 768  ){
+      $(document).ready(function () {
+        
+          $('#header').wobbleWindow({
+            radius: 50,
+            movementTop: false,
+            movementLeft: false,
+            movementRight: false,
+            debug: false,
+          });
+        
+
+        
+
+        
+          $('#footer').wobbleWindow({
+            radius: 50,
+            movementBottom: false,
+            movementLeft: false,
+            movementRight: false,
+            position: 'absolute',
+            debug: false,
+          });
+        
+      });
+    }
+  </script>
+
+  
+
+  <script async src="/js/cursor/fireworks.js"></script>
+
+
+</body>
+</html>

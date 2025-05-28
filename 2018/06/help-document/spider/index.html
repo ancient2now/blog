@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="icon" type="image/png" sizes="32x32" href="/blog/images/profile/profile_thumb.jpg">
+  <link rel="icon" type="image/png" sizes="16x16" href="/blog/images/profile/profile_thumb.jpg">
+
+<link rel="stylesheet" href="/blog/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"ancient2now.github.io","root":"/blog/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="爬虫基础scrapy-redis把 url 存在某个地方（redis），共享给所有的机器，总的调度器来分配请求，判断 spider 有没有闲置，闲置了就继续给它任务，直到所有的 url 都爬完，这种方法解决了去重问题，也能提高性能，scrapy-redis 就实现了这样一个完整框架，总的来说，这更适合广度优先的爬取。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式爬虫">
+<meta property="og:url" content="https://ancient2now.github.io/blog/2018/06/help-document/spider/index.html">
+<meta property="og:site_name" content="Li Junqiu&#39;s Blog">
+<meta property="og:description" content="爬虫基础scrapy-redis把 url 存在某个地方（redis），共享给所有的机器，总的调度器来分配请求，判断 spider 有没有闲置，闲置了就继续给它任务，直到所有的 url 都爬完，这种方法解决了去重问题，也能提高性能，scrapy-redis 就实现了这样一个完整框架，总的来说，这更适合广度优先的爬取。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-06-07T10:05:49.000Z">
+<meta property="article:modified_time" content="2025-05-28T12:45:11.240Z">
+<meta property="article:author" content="李 俊 秋">
+<meta property="article:tag" content="spider">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://ancient2now.github.io/blog/2018/06/help-document/spider/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>分布式爬虫 | Li Junqiu's Blog</title>
+  
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?1b1b4c07c3486b17d72642804f132fb4";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/blog/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Li Junqiu's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/blog/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/blog/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/blog/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/blog/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="https://ancient2now.github.io/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://ancient2now.github.io/blog/2018/06/help-document/spider/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/blog/images/profile/profile_thumb.jpg">
+      <meta itemprop="name" content="李 俊 秋">
+      <meta itemprop="description" content="out of sight, out of mind">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Li Junqiu's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          分布式爬虫
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-06-07 18:05:49" itemprop="dateCreated datePublished" datetime="2018-06-07T18:05:49+08:00">2018-06-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-05-28 20:45:11" itemprop="dateModified" datetime="2025-05-28T20:45:11+08:00">2025-05-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/blog/categories/Help-Document/" itemprop="url" rel="index"><span itemprop="name">Help Document</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="爬虫基础"><a href="#爬虫基础" class="headerlink" title="爬虫基础"></a>爬虫基础</h2><h3 id="scrapy-redis"><a href="#scrapy-redis" class="headerlink" title="scrapy-redis"></a>scrapy-redis</h3><p>把 url 存在某个地方（redis），共享给所有的机器，总的调度器来分配请求，判断 spider 有没有闲置，闲置了就继续给它任务，直到所有的 url 都爬完，这种方法解决了去重问题，也能提高性能，scrapy-redis 就实现了这样一个完整框架，总的来说，这更适合广度优先的爬取。</p>
+<a id="more"></a>
+
+<h3 id="Headers设置"><a href="#Headers设置" class="headerlink" title="Headers设置"></a>Headers设置</h3><ul>
+<li>User-Agent: 部分服务器或 Proxy 会通过该值来判断是否是浏览器发出的请求</li>
+<li>Content-Type: 使用 REST 接口时，服务器会检查该值，用来确定 HTTP Body 中的内容该怎样解析</li>
+<li>application/xml: 在 XMl RPC, 如 RESTful/SOAP 调用时使用</li>
+<li>application/json: 在 JSON RPC 调用时使用</li>
+<li>application/x-www-form-urlencoded: 浏览器提交 Web 表单时使用</li>
+</ul>
+<h2 id="爬虫难点"><a href="#爬虫难点" class="headerlink" title="爬虫难点"></a>爬虫难点</h2><h3 id="反爬虫机制"><a href="#反爬虫机制" class="headerlink" title="反爬虫机制"></a>反爬虫机制</h3><p>A. 异常流量/高下载率 - 特别是时间内，从单一的短的客户端/或IP地址发送的请求。</p>
+<p>B. 在网站上重复执行的任务 - 基于假设是人类用户将无法一直执行相同的重复任务。</p>
+<p>C. 通过检测蜜罐 - 蜜罐通常是那些对于一个普通用户不可见，而只有爬虫可见的链接。当爬虫试图访问该链接时，警报就会触发。</p>
+<p><strong>针对这些反爬虫机制，可以通过以下策略来避开或者绕过这样的封锁:</strong></p>
+<h4 id="A-轮换IP地址"><a href="#A-轮换IP地址" class="headerlink" title="A. 轮换IP地址"></a>A. 轮换IP地址</h4><p>IP黑名单是可能的爬虫的最简单的方法。通过创建IP地址池，并使用不同的IP发出请求，将使服务器很难检测到爬虫。</p>
+<p>对策：<br>使用来自代理服务的IP列表，一定的时间间隔后随机挑选一个IP</p>
+<h4 id="B-轮换Cookie"><a href="#B-轮换Cookie" class="headerlink" title="B. 轮换Cookie"></a>B. 轮换Cookie</h4><p>Cookies是加密存储在客户端的数据，有的网站使用Cookie来标识用户。如果用户在客户端发送高频请求，有可能被认定为可疑爬虫，从而拒绝访问。</p>
+<p>对策：<br>自定义和管理cookie池<br>发送不包含cookie的请求到服务器，解析返回的包并设置cookie值; 它存储在cookie的收集器;<br>从cookie收集器中获取cookie，如果cookie不可用，则从cookie收集器中将其删除;<br>利用时间戳管理cookie收集器，这样是为了让爬虫每次首先获得的距离当前时间最远的cookie。<br>关闭Cookies<br>通过禁用cookie，可以帮助防止某些网站通过使用cookie来标识用户，从而导致爬虫被封禁。  </p>
+<h4 id="C-用户代理欺骗"><a href="#C-用户代理欺骗" class="headerlink" title="C. 用户代理欺骗"></a>C. 用户代理欺骗</h4><p>伪装成浏览器的方法之一是修改用户代理(User Agent)。用户代理是在请求Header中的字符串，它包含用户代理信息，例如网络浏览器，客户端，操作系统等的版本。</p>
+<p><strong>对策:</strong><br>通过用户代理的列表或者随机生成器，随机选择或生成对于每个请求的欺骗用户代理。设置为用户代理一个常见的网页浏览器，而不是使用默认的请求客户端。</p>
+<h4 id="D-限制速度"><a href="#D-限制速度" class="headerlink" title="D. 限制速度"></a>D. 限制速度</h4><p>降低抓取速度，善待网站，而不要让其不堪重负，或者DDoS攻击服务器。</p>
+<p>对策：<br>在每个请求之间的放入一些随机休眠时间<br>在抓取一定的网页数后，添加一些延迟<br>使用尽可能小的并发请求数目</p>
+<h4 id="E-避免重复性爬行模式"><a href="#E-避免重复性爬行模式" class="headerlink" title="E *避免重复性爬行模式"></a>E *避免重复性爬行模式</h4><p>有些网站实现智能防抓取机制，从而重复操作将有可能检测为爬虫。为了让爬虫看起来像一个人，加上随机点击，鼠标移动，随机行为等。使用自动化测试工具，如可模拟器正常的“人的行为”。</p>
+<h4 id="F-小心蜜罐"><a href="#F-小心蜜罐" class="headerlink" title="F *小心蜜罐"></a>F *小心蜜罐</h4><p>这些蜜罐（HoneyPot）通常是链接，普通用户无法看到，但爬虫则可以。他们有可能在CSS样式中显示“display: none”。因此，蜜罐的检测可能会非常棘手。</p>
+<blockquote>
+<p>以上”反反爬虫”策略也可阅读博文Anti Anti-spider Strategy</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>李 俊 秋
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://ancient2now.github.io/blog/2018/06/help-document/spider/" title="分布式爬虫">https://ancient2now.github.io/blog/2018/06/help-document/spider/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/blog/tags/spider/" rel="tag"># spider</a>
+          </div>
+
+        <div>
+  
+    <div style="text-align:center;color:#bfbfbf;font-size:16px;">
+      <span>-------- 本文结束 </span>
+      <i class="fa fa-paw"></i>
+      <span> 感谢阅读 --------</span>
+    </div>
+  
+</div>
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/blog/2017/06/reading/docker-study-xunxu/" rel="prev" title="《循序渐进学Docker》读书笔记">
+      <i class="fa fa-chevron-left"></i> 《循序渐进学Docker》读书笔记
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/blog/2020/07/essay/plan-2020/" rel="next" title="2020年规划">
+      2020年规划 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#爬虫基础"><span class="nav-text">爬虫基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#scrapy-redis"><span class="nav-text">scrapy-redis</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Headers设置"><span class="nav-text">Headers设置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#爬虫难点"><span class="nav-text">爬虫难点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#反爬虫机制"><span class="nav-text">反爬虫机制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#A-轮换IP地址"><span class="nav-text">A. 轮换IP地址</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#B-轮换Cookie"><span class="nav-text">B. 轮换Cookie</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#C-用户代理欺骗"><span class="nav-text">C. 用户代理欺骗</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#D-限制速度"><span class="nav-text">D. 限制速度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#E-避免重复性爬行模式"><span class="nav-text">E *避免重复性爬行模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#F-小心蜜罐"><span class="nav-text">F *小心蜜罐</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <a href="/">
+    <img class="site-author-image" itemprop="image" alt="李 俊 秋"
+      src="/blog/images/profile/profile_thumb.jpg">
+  </a>
+  <p class="site-author-name" itemprop="name">李 俊 秋</p>
+  <div class="site-description" itemprop="description">out of sight, out of mind</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/blog/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/blog/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/blog/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/ancient2now" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;ancient2now" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:ancient2now@qq.com" title="E-Mail → mailto:ancient2now@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/blog/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      友情链接
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://resume.akikun.com/" title="https:&#x2F;&#x2F;resume.akikun.com" rel="noopener" target="_blank">个人简历</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2018 – 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">李 俊 秋</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.1.0/lib/anime.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/velocity-animate@1/velocity.ui.min.js"></script>
+
+<script src="/blog/js/utils.js"></script>
+
+<script src="/blog/js/motion.js"></script>
+
+
+<script src="/blog/js/schemes/muse.js"></script>
+
+
+<script src="/blog/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  
+
+<script type="text/javascript" src="//cdn.jsdelivr.net/npm/jquery@2.1.3/dist/jquery.min.js"></script>
+  <script src="/js/wobblewindow.js"></script>
+  <script>
+    //只在桌面版网页启用特效
+    if( window.innerWidth > 768  ){
+      $(document).ready(function () {
+        
+          $('#header').wobbleWindow({
+            radius: 50,
+            movementTop: false,
+            movementLeft: false,
+            movementRight: false,
+            debug: false,
+          });
+        
+
+        
+
+        
+          $('#footer').wobbleWindow({
+            radius: 50,
+            movementBottom: false,
+            movementLeft: false,
+            movementRight: false,
+            position: 'absolute',
+            debug: false,
+          });
+        
+      });
+    }
+  </script>
+
+  
+
+  <script async src="/js/cursor/fireworks.js"></script>
+
+
+</body>
+</html>
